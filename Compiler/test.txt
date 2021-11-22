@@ -1,0 +1,28 @@
+"cos " 
+and
+class Fibonacci
+{
+    a = 1
+    b = 1
+
+    def CalculateNextFibonacciNumber()
+    {
+        c = b
+        self.b = self.a + self.b
+        self.a = c
+        return self.b
+    }
+}
+
+def main()
+{
+    maxValue = 100000
+    fibonacci = Fibonacci()
+    fibonacciNumber = 0
+    while(fibonacciNumber < maxValue)
+    {
+        fibonacciNumber = fibonacci.CalculateNextFibonacciNumber()
+    }
+    print("Last fibonacci number lower than 100000 is")
+    print(fibonacciNumber)
+}
