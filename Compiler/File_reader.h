@@ -10,7 +10,6 @@ public:
     void go_back();
     unsigned int& get_current_line_number();
     unsigned int& get_current_sign_position();
-    std::string get_line(const std::streampos& line_position);
 
 private:
     std::ifstream handler;

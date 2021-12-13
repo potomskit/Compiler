@@ -27,7 +27,6 @@ enum token_type : unsigned int
     Divide = 19,
     IntegerLiteral = 20,
     EndOfFile = 21,
-    NewLine = 22,
     Function = 23,
     LeftParen = 24,
     RightParen = 25,
@@ -40,18 +39,22 @@ enum token_type : unsigned int
     Continue = 32,
     Break = 33,
     StringLiteral = 34,
+	Undefined = 35,
+    Semicolon = 36,
 };
 
 class token {
 public:
     token() = default;
-    token(const token_type& type) : type(type) {}
+    token(const token_type& type) : type(type) {} // change contructor and set public variables to private and then do setters
     token_type type = token_type::Invalid;
     std::string value = "";
     unsigned int line = 0;
     unsigned int position = 0;
+    unsigned int line_start = 0;
 	
 };
+
 const std::unordered_map<std::string, token_type> keywords =
 {
         {"def", token_type::Function},
@@ -79,8 +82,47 @@ const std::unordered_map<char, token_type> signs =
         {'*', token_type::Multiply},
         {'/', token_type::Divide},
         {'.', token_type::Dot},
-        {'\n', token_type::NewLine},
-        {'!', token_type::Negation}
+        {'!', token_type::Negation},
+		{';', token_type::Semicolon},
+};
+
+const std::unordered_map<unsigned int, std::string> tokenTypeNames = {
+       { 0,  "Comma"},
+       { 1,  "Dot"},
+       { 2,  "If"},
+       { 3,  "While"},
+       { 4,  "Else"},
+       { 5,  "Return"},
+       { 6,  "Negation"},
+       { 7,  "Assignment"},
+       { 8,  "Or"},
+       { 9,  "And"},
+       { 10, "Equal"},
+       { 11, "NotEqual"},
+       { 12, "Less"},
+       { 13, "Greater"},
+       { 14, "LessEqual"},
+       { 15, "GreaterEqual"},
+       { 16, "Plus"},
+       { 17, "Minus"},
+       { 18, "Multiply"},
+       { 19, "Divide"},
+       { 20, "IntegerLiteral"},
+       { 21, "EndOfFile"},
+       { 23, "Function"},
+       { 24, "LeftParen"},
+       { 25, "RightParen"},
+       { 26, "Elif"},
+       { 27, "LeftBracket"},
+       { 28, "RightBracket"},
+       { 29, "Class"},
+       { 30, "Invalid"},
+       { 31, "Identifier"},
+       { 32, "Continue"},
+       { 33, "Break"},
+       { 34, "StringLiteral"},
+       { 35, "Undefined"},
+	   {35, "Semicolon"},
 };
 
 inline std::ostream& operator<< (std::ostream& os, token const& token) {
@@ -90,3 +132,7 @@ inline std::ostream& operator<< (std::ostream& os, token const& token) {
     os << "\n";
     return os;
 }
+inline const std::string getTokenTypeName(const token_type& tokenType)
+{
+    return tokenTypeNames.at(static_cast<unsigned int>(tokenType));
+};

@@ -141,13 +141,24 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Compiler.cpp" />
+    <ClCompile Include="ErrorHandler.cpp" />
     <ClCompile Include="File_reader.cpp" />
     <ClCompile Include="Lexer.cpp" />
+    <ClCompile Include="Node.cpp" />
+    <ClCompile Include="Parser.cpp" />
+    <ClCompile Include="TerminalPrinter.cpp" />
+    <ClCompile Include="tracer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Nodes.h" />
+    <ClInclude Include="ErrorHandler.h" />
     <ClInclude Include="File_reader.h" />
     <ClInclude Include="Lexer.h" />
+    <ClInclude Include="Node.h" />
+    <ClInclude Include="Parser.h" />
+    <ClInclude Include="TerminalPrinter.h" />
     <ClInclude Include="Token.h" />
+    <ClInclude Include="tracer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

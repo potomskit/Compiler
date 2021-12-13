@@ -3,7 +3,6 @@
 token lexer::next_token() {
     token token;
 
-
     char sign = this->reader.next_sign();
 
     while (isspace(sign))
@@ -18,10 +17,7 @@ token lexer::next_token() {
     {
         token.type = token_type::EndOfFile;
     }
-    else if (sign == '\n') {
-        token.type = token_type::NewLine;
-    }
-    else if (isalpha(sign) || sign == '_')
+    else if (isalpha(sign) || sign == '_') //delegate to another method
     {
 	    std::string buffer;
 
@@ -34,9 +30,10 @@ token lexer::next_token() {
         this->reader.go_back();
 	    std::string tempBuff = buffer;
 
-        if (keywords.count(tempBuff) == 1)
+		const auto iterator = keywords.find(tempBuff);
+        if (iterator != keywords.end())
         {
-            token.type = keywords.at(tempBuff);
+            token.type = iterator->second;
         }
         else
         {
@@ -44,7 +41,7 @@ token lexer::next_token() {
             token.value = buffer;
         }
     }
-    else if (sign == '\"')
+    else if (sign == '\"') //what if EOF in string? special characters
     {
 	    std::string buffer;
         do
@@ -57,7 +54,7 @@ token lexer::next_token() {
         token.type = token_type::StringLiteral;
         token.value = buffer;
     }
-    else if (isdigit(sign))
+    else if (isdigit(sign)) //json.org what if number start from 0?
     {
 	    std::string buffer;
         do
@@ -73,80 +70,80 @@ token lexer::next_token() {
     }
     else
     {
-        switch (sign)
+        switch (sign)//change not to use go_back
         {
-        case '=':
-        {
-            if (this->reader.next_sign() == '=')
-            {
-                token.type = token_type::Equal;
-            }
-            else
-            {
-                this->reader.go_back();
-                token.type = token_type::Assignment;
-            }
-            break;
-        }
-        case '<':
-        {
-            if (this->reader.next_sign() == '=')
-            {
-                token.type = token_type::LessEqual;
-            }
-            else
-            {
-                this->reader.go_back();
-                token.type = token_type::Less;
-            }
-            break;
-        }
-        case '>':
-        {
-            if (this->reader.next_sign() == '=')
-            {
-                token.type = token_type::GreaterEqual;
-            }
-            else
-            {
-                this->reader.go_back();
-                token.type = token_type::Greater;
-            }
-            break;
-        }
-        case '!':
-        {
-            if (this->reader.next_sign() == '=')
-            {
-                token.type = token_type::NotEqual;
-            }
-            else
-            {
-                this->reader.go_back();
-                token.type = token_type::Negation;
-            }
-            break;
-        }
-        default:
-        {
-            if (signs.count(sign) == 1)
-            {
-                token.type = signs.at(sign);
-            }
-            else
-            {
-                token.type = token_type::Invalid;
-            }
-            break;
-        }
+	        case '=':
+	        {
+	            if (this->reader.next_sign() == '=')
+	            {
+	                token.type = token_type::Equal;
+	            }
+	            else
+	            {
+	                this->reader.go_back();
+	                token.type = token_type::Assignment;
+	            }
+	            break;
+	        }
+	        case '<':
+	        {
+	            if (this->reader.next_sign() == '=')
+	            {
+	                token.type = token_type::LessEqual;
+	            }
+	            else
+	            {
+	                this->reader.go_back();
+	                token.type = token_type::Less;
+	            }
+	            break;
+	        }
+	        case '>':
+	        {
+	            if (this->reader.next_sign() == '=')
+	            {
+	                token.type = token_type::GreaterEqual;
+	            }
+	            else
+	            {
+	                this->reader.go_back();
+	                token.type = token_type::Greater;
+	            }
+	            break;
+	        }
+	        case '!':
+	        {
+	            if (this->reader.next_sign() == '=')
+	            {
+	                token.type = token_type::NotEqual;
+	            }
+	            else
+	            {
+	                this->reader.go_back();
+	                token.type = token_type::Negation;
+	            }
+	            break;
+	        }
+			case ';':
+	        {
+				token.type == token_type::Semicolon;
+	        }	
+	        default:
+	        {
+	        	//auto iterator = 
+	            if (signs.count(sign) == 1)
+	            {
+	                token.type = signs.at(sign);
+	            }
+	            else
+	            {
+	                token.type = token_type::Invalid;
+	            }
+	            break;
+	        }
         }
     }
     return token;
-}
-
-const std::string lexer::get_line(const std::streampos& line_position)
-{
-    return this->reader.get_line(line_position);
 }
 
 lexer::lexer(const std::string& file) :reader(file) {};
