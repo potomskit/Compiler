@@ -26,10 +26,11 @@ public:
         ClassBlock,
         StringLiteral,
     	IntegerLiteral,
+    	Identifier,
     };
 
     virtual Type getType() = 0;
 };
 
-typedef std::shared_ptr<Node> NodePtr;
+typedef std::unique_ptr<Node> NodePtr;
 

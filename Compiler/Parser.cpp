@@ -11,7 +11,7 @@ using Lexer = lexer;
 Parser::Parser(Lexer& lexer) :lexer(lexer)
 {}
 
-std::shared_ptr<Nodes::Program> Parser::parse()
+std::unique_ptr<Nodes::Program> Parser::parse()
 {
     this->tracer.reset();
 
@@ -19,11 +19,11 @@ std::shared_ptr<Nodes::Program> Parser::parse()
 
     token token;
 
-    std::shared_ptr<Nodes::Program> syntaxTree = std::make_shared<Nodes::Program>();
-    std::shared_ptr<Nodes::ClassDefinition> last_class;
+    std::unique_ptr<Nodes::Program> syntaxTree = std::make_unique<Nodes::Program>();
+    std::unique_ptr<Nodes::ClassDefinition> last_class;
     this->tracer.enter("Starting parser tracing...");
 	
-    while (this->peek({token_type::Class}))
+    while (this->peek({token_type::Class})) //change to do while
     {
         syntaxTree->addClass(this->parseClass());
     }
@@ -43,7 +43,6 @@ bool Parser::isAcceptable(const token& token, const std::initializer_list<token_
             return true;
         }
     }
-
     return false;
 }
 
@@ -76,7 +75,6 @@ token Parser::accept(const std::initializer_list<token_type>& acceptable)
             .append(std::to_string(token.position))
             .append(")")
             .append("\n")
-            //.append(this->lexer.getLine(token.line_start))
             .append("\n")
             .append(this->makeErrorMarker(token.position))
         );
@@ -140,9 +138,9 @@ void Parser::resetPreviousToken()
     this->previousToken.position = 0;
 }
 
-std::shared_ptr<Nodes::FunDefinition> Parser::parseFunction()
+std::unique_ptr<Nodes::FunDefinition> Parser::parseFunction()
 {
-    std::shared_ptr<Nodes::FunDefinition> node = std::make_shared<Nodes::FunDefinition>();
+    std::unique_ptr<Nodes::FunDefinition> node = std::make_unique<Nodes::FunDefinition>();
 
     this->tracer.enter("Parsing function");
 
@@ -162,17 +160,13 @@ std::shared_ptr<Nodes::FunDefinition> Parser::parseFunction()
     return node;
 }
 
-std::shared_ptr<Nodes::ClassDefinition> Parser::parseClass()
+std::unique_ptr<Nodes::ClassDefinition> Parser::parseClass()
 {
-    std::shared_ptr<Nodes::ClassDefinition> node = std::make_shared<Nodes::ClassDefinition>();
+    std::unique_ptr<Nodes::ClassDefinition> node = std::make_unique<Nodes::ClassDefinition>();
     this->tracer.enter("Parsing class");
-    auto tempToken = this->accept({ token_type::Class, token_type::EndOfFile });
-	if(tempToken.type == token_type::EndOfFile)
-	{
-        this->tracer.leave("EOF");
-        return nullptr;
-	}
-    tempToken = this->accept({ token_type::Identifier });
+    this->accept({ token_type::Class});
+	
+    auto tempToken = this->accept({ token_type::Identifier });
     node->setName(tempToken.value);
     node->setBlock(this->parseClassBlock());
     this->tracer.leave();
@@ -211,9 +205,9 @@ std::vector<std::string> Parser::parseParameters()
     return parametersNames;
 }
 
-std::shared_ptr<Nodes::ClassBlock> Parser::parseClassBlock()
+std::unique_ptr<Nodes::ClassBlock> Parser::parseClassBlock()
 {
-    std::shared_ptr<Nodes::ClassBlock> node = std::make_shared<Nodes::ClassBlock>();
+    std::unique_ptr<Nodes::ClassBlock> node = std::make_unique<Nodes::ClassBlock>();
 
     this->tracer.enter("Parsing statement block");
 
@@ -252,9 +246,9 @@ std::shared_ptr<Nodes::ClassBlock> Parser::parseClassBlock()
     return node;
 }
 
-std::shared_ptr<Nodes::StatementBlock> Parser::parseStatementBlock()
+std::unique_ptr<Nodes::StatementBlock> Parser::parseStatementBlock()
 {
-    std::shared_ptr<Nodes::StatementBlock> node = std::make_shared<Nodes::StatementBlock>();
+    std::unique_ptr<Nodes::StatementBlock> node = std::make_unique<Nodes::StatementBlock>();
 
     this->tracer.enter("Parsing statement block");
 
@@ -262,7 +256,7 @@ std::shared_ptr<Nodes::StatementBlock> Parser::parseStatementBlock()
 
     token tempToken;
 
-    while (true)
+    while (true) //remove infinity loop
     {
         if (!this->peek({
             token_type::If,
@@ -311,9 +305,9 @@ std::shared_ptr<Nodes::StatementBlock> Parser::parseStatementBlock()
     return node;
 }
 
-std::shared_ptr<Nodes::IfStatement> Parser::parseIfStatement()
+std::unique_ptr<Nodes::IfStatement> Parser::parseIfStatement()
 {
-    std::shared_ptr<Nodes::IfStatement> node = std::make_shared<Nodes::IfStatement>();
+    std::unique_ptr<Nodes::IfStatement> node = std::make_unique<Nodes::IfStatement>();
 
     this->tracer.enter("Parsing if statement");
 
@@ -323,13 +317,16 @@ std::shared_ptr<Nodes::IfStatement> Parser::parseIfStatement()
     node->setCondition(this->parseCondition());
 
     this->accept({ token_type::RightParen });
-
+    
     node->setTrueBlock(this->parseStatementBlock());
-
+    while(this->peek({token_type::Elif}))
+    {
+        this->accept({ token_type::Elif });
+        node->addElifBlock(this->parseStatementBlock());
+    }
     if (this->peek({ token_type::Else }))
     {
         this->accept({ token_type::Else });
-
         node->setFalseBlock(this->parseStatementBlock());
     }
 
@@ -337,9 +334,9 @@ std::shared_ptr<Nodes::IfStatement> Parser::parseIfStatement()
     return node;
 }
 
-std::shared_ptr<Nodes::WhileStatement> Parser::parseWhileStatement()
+std::unique_ptr<Nodes::WhileStatement> Parser::parseWhileStatement()
 {
-    std::shared_ptr<Nodes::WhileStatement> node = std::make_shared<Nodes::WhileStatement>();
+    std::unique_ptr<Nodes::WhileStatement> node = std::make_unique<Nodes::WhileStatement>();
 
     this->tracer.enter("Parsing while statement");
 
@@ -356,9 +353,9 @@ std::shared_ptr<Nodes::WhileStatement> Parser::parseWhileStatement()
     return node;
 }
 
-std::shared_ptr<Nodes::ReturnStatement> Parser::parseReturnStatement()
+std::unique_ptr<Nodes::ReturnStatement> Parser::parseReturnStatement()
 {
-    std::shared_ptr<Nodes::ReturnStatement> node = std::make_shared<Nodes::ReturnStatement>();
+    std::unique_ptr<Nodes::ReturnStatement> node = std::make_unique<Nodes::ReturnStatement>();
 
     this->tracer.enter("Parsing return statement");
 
@@ -372,9 +369,9 @@ std::shared_ptr<Nodes::ReturnStatement> Parser::parseReturnStatement()
     return node;
 }
 
-std::shared_ptr<Nodes::VarDeclaration> Parser::parseInitStatement()
+std::unique_ptr<Nodes::VarDeclaration> Parser::parseInitStatement()
 {
-    std::shared_ptr<Nodes::VarDeclaration> node = std::make_shared<Nodes::VarDeclaration>();
+    std::unique_ptr<Nodes::VarDeclaration> node = std::make_unique<Nodes::VarDeclaration>();
 
     this->tracer.enter("Parsing init statement");
 
@@ -400,21 +397,13 @@ NodePtr Parser::parseAssignmentOrFunCall()
 
     this->tracer.enter("Parsing assignment or function call");
 
-    auto tempToken1 = this->accept({ token_type::Identifier });
-    token tempToken2;
-	if(this->peek({token_type::Dot}))
-	{
-        this->accept({ token_type::Dot });
-        tempToken2 = this->accept({ token_type::Identifier });
-	}
-    
-    node = this->parseFunCall(tempToken1.value + "." + tempToken2.value);
+    auto identifier = this->parseIdentifier();
+    node = this->parseFunCall(identifier);
     
     if (!node)
     {
         std::shared_ptr<Nodes::Assignment> assignmentNode = std::make_shared<Nodes::Assignment>();
-        tempToken1.value = tempToken1.value + "." + tempToken2.value;
-        assignmentNode->setVariable(this->parseVariable(tempToken1));
+        assignmentNode->setVariable(this->parseVariable(identifier));
 
         this->accept({ token_type::Assignment });
 
@@ -429,9 +418,9 @@ NodePtr Parser::parseAssignmentOrFunCall()
     return node;
 }
 
-std::shared_ptr<Nodes::LoopJump> Parser::parseLoopJump()
+std::unique_ptr<Nodes::LoopJump> Parser::parseLoopJump()
 {
-    std::shared_ptr<Nodes::LoopJump> node = std::make_shared<Nodes::LoopJump>();
+    std::unique_ptr<Nodes::LoopJump> node = std::make_unique<Nodes::LoopJump>();
 
     this->tracer.enter("Parsing loop jump");
 
@@ -444,25 +433,19 @@ std::shared_ptr<Nodes::LoopJump> Parser::parseLoopJump()
     return node;
 }
 
-std::shared_ptr<Nodes::Assignable> Parser:: parseAssignable()
+std::unique_ptr<Nodes::Assignable> Parser:: parseAssignable()
 {
-    std::shared_ptr<Nodes::Assignable> node;
+    std::unique_ptr<Nodes::Assignable> node;
     token tempIdentifier2;;
-    this->tracer.enter("Parsing assignable");
+    this->tracer.enter("Parsing assignable"); //a = b + c + d
     if (this->peek({ token_type::Identifier }))
     {
-        auto tempIdentifier1 = this->accept({ token_type::Identifier });
-        if (this->peek({ token_type::Dot }))
-        {
-            this->accept({ token_type::Dot });
-            tempIdentifier2 = this->accept({ token_type::Identifier });
-        }
-		node = this->parseFunCall(tempIdentifier1.value + "." + tempIdentifier2.value);
+        auto identifier = this->parseIdentifier();
+		node = this->parseFunCall(identifier);
         
         if (!node)
         {
-            tempIdentifier1.value = tempIdentifier1.value + "." + tempIdentifier2.value;
-			node = this->parseExpression(tempIdentifier1);
+			node = this->parseExpression(identifier);
         }
     }
     else
@@ -474,36 +457,19 @@ std::shared_ptr<Nodes::Assignable> Parser:: parseAssignable()
     return node;
 }
 
-std::shared_ptr<Nodes::Call> Parser::parseFunCall(const std::string& identifier)
+std::unique_ptr<Nodes::Call> Parser::parseFunCall(const std::unique_ptr<Nodes::Identifier>& identifier)
 {
-    std::shared_ptr<Nodes::Call> node = std::make_shared<Nodes::Call>();
-    token identifier2;
+    std::unique_ptr<Nodes::Call> node = std::make_unique<Nodes::Call>();
     this->tracer.enter("Parsing function call");
-    /*if(this->peek({token_type::Dot}))
-    {
-        this->accept({ token_type::Dot });
-        identifier2 = this->accept({ token_type::Identifier });
-    }*/
 	
     if (!this->peek({ token_type::LeftParen }))
     {
         this->tracer.leave("  - not a function call");
         return nullptr;
     }
-    
-    int dotIndex = identifier.find('.');
-    std::string objcetName = identifier.substr(0, dotIndex);
-    std::string name = identifier.substr(dotIndex + 1);
-    if (name == "" || nullptr)
-    {
-        node->setName(objcetName);
-    }
-    else
-    {
-        node->setName(name);
-        node->setObjectName(objcetName);
-    }
 
+    node->setIdentifier(identifier);
+	
     this->accept({ token_type::LeftParen });
 
     if (this->peek({ token_type::RightParen }))
@@ -541,59 +507,19 @@ std::shared_ptr<Nodes::Call> Parser::parseFunCall(const std::string& identifier)
     return node;
 }
 
-std::shared_ptr<Nodes::Variable> Parser::parseVariable(const token& identifierToken)
+std::unique_ptr<Nodes::Variable> Parser::parseVariable(const std::unique_ptr<Nodes::Identifier>& identifier)
 {
-    std::shared_ptr<Nodes::Variable> node = std::make_shared<Nodes::Variable>();
-
+    std::unique_ptr<Nodes::Variable> node = std::make_unique<Nodes::Variable>();
     this->tracer.enter("Parsing variable");
-    token tempToken = identifierToken;
-    if (identifierToken.type != token_type::Identifier)
-    {
-        tempToken = this->accept({ token_type::Identifier });
-        if (this->peek({ token_type::Dot }))
-        {
-            this->accept({ token_type::Dot });
-            auto secondtempToken = this->accept({ token_type::Identifier });
-            node->setName(secondtempToken.value);
-            node->setObjectName(tempToken.value);
-
-        }
-        node->setName(tempToken.value);
-    	
-    }
-    else
-    {
-        
-        int dotIndex = identifierToken.value.find('.');
-        std::string objcetName = identifierToken.value.substr(0, dotIndex);
-        std::string name = identifierToken.value.substr(dotIndex + 1);
-        if (name == "" || nullptr)
-        {
-            node->setName(objcetName);
-        }
-        else
-        {
-            node->setName(name);
-            node->setObjectName(objcetName);
-        }
-    }
-	
-   /* if (this->peek({token_type::Dot}))
-    {
-        this->accept({ token_type::Dot });
-        auto secondtempToken = this->accept({ token_type::Identifier });
-        node->setName(secondtempToken.value);
-        node->setObjectName(tempToken.value);
-    	
-    }*/
+    node->setIdentifier(identifier);
   
     this->tracer.leave();
     return node;
 }
 
-std::shared_ptr<Nodes::IntegerLiteral> Parser::parseLiteral()
+std::unique_ptr<Nodes::IntegerLiteral> Parser::parseLiteral()
 {
-    std::shared_ptr<Nodes::IntegerLiteral> node = std::make_shared<Nodes::IntegerLiteral>();
+    std::unique_ptr<Nodes::IntegerLiteral> node = std::make_unique<Nodes::IntegerLiteral>();
 
     this->tracer.enter("Parsing literal");
     
@@ -604,7 +530,7 @@ std::shared_ptr<Nodes::IntegerLiteral> Parser::parseLiteral()
     return node;
 }
 
-double Parser::parseNumberLiteral()
+int Parser::parseNumberLiteral()
 {
     double value;
     bool negative = false;
@@ -632,13 +558,13 @@ double Parser::parseNumberLiteral()
     return value;
 }
 
-std::shared_ptr<Nodes::Expression> Parser::parseExpression(const token& firstToken)
+std::unique_ptr<Nodes::Expression> Parser::parseExpression(const std::unique_ptr<Nodes::Identifier>& identifier)
 {
-    std::shared_ptr<Nodes::Expression> node = std::make_shared<Nodes::Expression>();
+    std::unique_ptr<Nodes::Expression> node = std::make_unique<Nodes::Expression>();
 
     this->tracer.enter("Parsing expression");
 
-    node->addOperand(this->parseMultiplicativeExpression(firstToken));
+    node->addOperand(this->parseMultiplicativeExpression(identifier));
 
     while (this->peek({ token_type::Plus, token_type::Minus }))
     {
@@ -652,13 +578,13 @@ std::shared_ptr<Nodes::Expression> Parser::parseExpression(const token& firstTok
 }
 
 
-std::shared_ptr<Nodes::Expression> Parser::parseMultiplicativeExpression(const token& firstToken)
+std::unique_ptr<Nodes::Expression> Parser::parseMultiplicativeExpression(const std::unique_ptr<Nodes::Identifier>& identifier)
 {
-    std::shared_ptr<Nodes::Expression> node = std::make_shared<Nodes::Expression>();
+    std::unique_ptr<Nodes::Expression> node = std::make_unique<Nodes::Expression>();
 
     this->tracer.enter("Parsing multiplicative expression");
 
-    node->addOperand(this->parsePrimaryExpression(firstToken));
+    node->addOperand(this->parsePrimaryExpression(identifier));
 
     while (this->peek({ token_type::Multiply, token_type::Divide }))
     {
@@ -672,15 +598,13 @@ std::shared_ptr<Nodes::Expression> Parser::parseMultiplicativeExpression(const t
     return node;
 }
 
-NodePtr Parser::parsePrimaryExpression(const token& firstToken)
+NodePtr Parser::parsePrimaryExpression(const std::unique_ptr<Nodes::Identifier>& identifier)
 {
     this->tracer.enter("Parsing primary expression");
-    this->tracer.info(std::string("First token type = ").append(getTokenTypeName(firstToken.type)));
 
-    if (firstToken.type != token_type::Undefined)
+    if (identifier != nullptr)
     {
-        auto node = this->parseVariable(firstToken);
-
+        auto node = this->parseVariable(identifier);
         this->tracer.leave();
         return node;
     }
@@ -697,7 +621,8 @@ NodePtr Parser::parsePrimaryExpression(const token& firstToken)
 
     if (this->peek({ token_type::Identifier }))
     {
-        auto node = this->parseVariable();
+        auto identifier = this->parseIdentifier();
+        auto node = this->parseVariable(identifier);
 
         this->tracer.leave();
         return node;
@@ -709,9 +634,9 @@ NodePtr Parser::parsePrimaryExpression(const token& firstToken)
     return node;
 }
 
-std::shared_ptr<Nodes::Condition> Parser::parseCondition()
+std::unique_ptr<Nodes::Condition> Parser::parseCondition()
 {
-    std::shared_ptr<Nodes::Condition> node = std::make_shared<Nodes::Condition>();
+    std::unique_ptr<Nodes::Condition> node = std::make_unique<Nodes::Condition>();
 
     this->tracer.enter("Parsing condition");
 
@@ -729,9 +654,9 @@ std::shared_ptr<Nodes::Condition> Parser::parseCondition()
     return node;
 }
 
-std::shared_ptr<Nodes::Condition> Parser::parseAndCondition()
+std::unique_ptr<Nodes::Condition> Parser::parseAndCondition()
 {
-    std::shared_ptr<Nodes::Condition> node = std::make_shared<Nodes::Condition>();
+    std::unique_ptr<Nodes::Condition> node = std::make_unique<Nodes::Condition>();
 
     this->tracer.enter("Parsing and condition");
 
@@ -749,9 +674,9 @@ std::shared_ptr<Nodes::Condition> Parser::parseAndCondition()
     return node;
 }
 
-std::shared_ptr<Nodes::Condition> Parser::parseEqualityCondition()
+std::unique_ptr<Nodes::Condition> Parser::parseEqualityCondition()
 {
-    std::shared_ptr<Nodes::Condition> node = std::make_shared<Nodes::Condition>();
+    std::unique_ptr<Nodes::Condition> node = std::make_unique<Nodes::Condition>();
 
     this->tracer.enter("Parsing equality condition");
 
@@ -769,9 +694,9 @@ std::shared_ptr<Nodes::Condition> Parser::parseEqualityCondition()
     return node;
 }
 
-std::shared_ptr<Nodes::Condition> Parser::parseRelationalCondition()
+std::unique_ptr<Nodes::Condition> Parser::parseRelationalCondition()
 {
-    std::shared_ptr<Nodes::Condition> node = std::make_shared<Nodes::Condition>();
+    std::unique_ptr<Nodes::Condition> node = std::make_unique<Nodes::Condition>();
 
     this->tracer.enter("Parsing relational condition");
 
@@ -802,7 +727,7 @@ NodePtr Parser::parsePrimaryCondition()
         node->setNegated();
     }
 
-    if (this->peek({ token_type::LeftParen }))
+    if (this->peek({ token_type::LeftParen }))//------------------------------// move to expression 
     {
         this->accept({ token_type::LeftParen });
         node->addOperand(this->parseCondition());
@@ -810,9 +735,10 @@ NodePtr Parser::parsePrimaryCondition()
     }
     else
     {
-        if (this->peek({ token_type::Identifier }))
+        if (this->peek({ token_type::Identifier })) //parse expression
         {
-            node->addOperand(this->parseVariable());
+            auto identifier = this->parseIdentifier();
+            node->addOperand(this->parseVariable(identifier));
         }
         else
         {
@@ -827,5 +753,20 @@ NodePtr Parser::parsePrimaryCondition()
     }
 
     this->tracer.leave();
+    return node ;
+}
+
+std::unique_ptr<Nodes::Identifier> Parser::parseIdentifier()
+{
+    std::unique_ptr<Nodes::Identifier> node = std::make_unique<Nodes::Identifier>();
+	while(this->peek({token_type::Identifier, token_type::Dot}))
+	{
+        auto token = this->accept({ token_type::Identifier, token_type::Dot });
+		if(token.type == token_type::Dot)
+		{
+            token = this->accept({ token_type::Identifier });
+		}
+        node->addNameSpace(token.value);
+	}
     return node;
 }

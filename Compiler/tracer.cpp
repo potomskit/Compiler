@@ -22,7 +22,6 @@ void Tracer::enter(const std::string& message)
 
     if (message.length() > 0)
     {
-        Tracer::printLabel("Tracer", "blue");
         this->printNesting();
         std::cout << message
             << std::endl;
@@ -40,7 +39,6 @@ void Tracer::leave(const std::string& message)
 
     if (this->nestingLevel == 0)
     {
-        Tracer::printLabel("Tracer", "blue");
         ErrorHandler::warning("Tried to leave top tracking level, leave aborted...");
         return;
     }
@@ -48,7 +46,6 @@ void Tracer::leave(const std::string& message)
 
     if (message.length() > 0)
     {
-        Tracer::printLabel("Tracer", "blue");
         this->printNesting();
         std::cout << message
             << std::endl;
@@ -62,7 +59,6 @@ void Tracer::info(const std::string& message)
         return;
     }
 
-    Tracer::printLabel("Tracer", "blue");
     this->printNesting();
     std::cout << message
         << std::endl;

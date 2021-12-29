@@ -8,11 +8,7 @@ int main()
 {
     lexer lex("test.txt");
     token a;
-    //while (a.type != token_type::EndOfFile) {
-    //    a = lex.next_token();
-    //    cout << a;
-    // }
-
+ 
     Parser par(lex);
     auto node = par.parse();
     //testing::InitGoogleTest(&argc, argv);

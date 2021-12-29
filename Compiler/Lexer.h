@@ -4,7 +4,7 @@
 
 
 class lexer {
-public:
+public: 
     token next_token();
     lexer(const std::string& filename);
     file_reader reader;

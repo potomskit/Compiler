@@ -122,7 +122,7 @@ const std::unordered_map<unsigned int, std::string> tokenTypeNames = {
        { 33, "Break"},
        { 34, "StringLiteral"},
        { 35, "Undefined"},
-	   {35, "Semicolon"},
+	   { 36, "Semicolon"},
 };
 
 inline std::ostream& operator<< (std::ostream& os, token const& token) {

@@ -5,12 +5,13 @@
 
 class lexer;
 
+//Unique Pointer
 class Parser
 {
 public:
     Parser(lexer& lexer);
 
-    std::shared_ptr<Nodes::Program> parse();
+    std::unique_ptr<Nodes::Program> parse();
 
 private:
     Tracer tracer = Tracer(true);
@@ -28,33 +29,34 @@ private:
     bool hasBufferedToken() const;
     void resetPreviousToken();
 
-    std::shared_ptr<Nodes::FunDefinition> parseFunction();
-    std::shared_ptr<Nodes::ClassDefinition> parseClass();
+    std::unique_ptr<Nodes::FunDefinition> parseFunction();
+    std::unique_ptr<Nodes::ClassDefinition> parseClass();
 
     std::vector<std::string> parseParameters();
-    std::shared_ptr<Nodes::StatementBlock> parseStatementBlock();
-    std::shared_ptr<Nodes::ClassBlock> parseClassBlock();
+    std::unique_ptr<Nodes::StatementBlock> parseStatementBlock();
+    std::unique_ptr<Nodes::ClassBlock> parseClassBlock();
 	
-    std::shared_ptr<Nodes::IfStatement> parseIfStatement();
-    std::shared_ptr<Nodes::WhileStatement> parseWhileStatement();
-    std::shared_ptr<Nodes::ReturnStatement> parseReturnStatement();
-    std::shared_ptr<Nodes::VarDeclaration> parseInitStatement();
+    std::unique_ptr<Nodes::IfStatement> parseIfStatement();
+    std::unique_ptr<Nodes::WhileStatement> parseWhileStatement();
+    std::unique_ptr<Nodes::ReturnStatement> parseReturnStatement();
+    std::unique_ptr<Nodes::VarDeclaration> parseInitStatement();
     NodePtr parseAssignmentOrFunCall();
-    std::shared_ptr<Nodes::LoopJump> parseLoopJump();
+    std::unique_ptr<Nodes::LoopJump> parseLoopJump();
 
-    std::shared_ptr<Nodes::Assignable> parseAssignable();
-    std::shared_ptr<Nodes::Call> parseFunCall(const std::string& identifier1);
-    std::shared_ptr<Nodes::Variable> parseVariable(const token& firstToken = token(token_type::Undefined));
-    std::shared_ptr<Nodes::IntegerLiteral> parseLiteral();
-    double parseNumberLiteral();
+    std::unique_ptr<Nodes::Identifier> parseIdentifier();
+    std::unique_ptr<Nodes::Assignable> parseAssignable();
+    std::unique_ptr<Nodes::Call> parseFunCall(const std::unique_ptr<Nodes::Identifier>& identifier);
+    std::unique_ptr<Nodes::Variable> parseVariable(const std::unique_ptr<Nodes::Identifier>& identifier);
+    std::unique_ptr<Nodes::IntegerLiteral> parseLiteral();
+    int parseNumberLiteral();
     
-    std::shared_ptr<Nodes::Expression> parseExpression(const token& firstToken = token(token_type::Undefined));
-    std::shared_ptr<Nodes::Expression> parseMultiplicativeExpression(const token& firstToken = token(token_type::Undefined));
-    NodePtr parsePrimaryExpression(const token& firstToken = token(token_type::Undefined));
+    std::unique_ptr<Nodes::Expression> parseExpression(const std::unique_ptr<Nodes::Identifier>& identifier = nullptr);
+    std::unique_ptr<Nodes::Expression> parseMultiplicativeExpression(const std::unique_ptr<Nodes::Identifier>& identifier = nullptr);
+    NodePtr parsePrimaryExpression(const std::unique_ptr<Nodes::Identifier>& identifier = nullptr);
 
-    std::shared_ptr<Nodes::Condition> parseCondition();
-    std::shared_ptr<Nodes::Condition> parseAndCondition();
-    std::shared_ptr<Nodes::Condition> parseEqualityCondition();
-    std::shared_ptr<Nodes::Condition> parseRelationalCondition();
+    std::unique_ptr<Nodes::Condition> parseCondition();
+    std::unique_ptr<Nodes::Condition> parseAndCondition();
+    std::unique_ptr<Nodes::Condition> parseEqualityCondition();
+    std::unique_ptr<Nodes::Condition> parseRelationalCondition();
     NodePtr parsePrimaryCondition();
 };

@@ -9,45 +9,55 @@ namespace Nodes {
 	class ClassDefinition;
 	class StatementBlock;
 	class Variable;
-
+    class Identifier : public Node
+    {
+    public:
+        virtual Type getType()
+        {
+            return Node::Type::Identifier;
+        }
+    	void addNameSpace(std::string name_space)
+        {
+            name_spaces.push_back(name_space);
+        }
+        std::vector<std::string> name_spaces;
+    };
 	class Assignable : public Node
     {
     public:
-        typedef std::shared_ptr<Assignable> ptr;
+        typedef std::unique_ptr<Assignable> ptr;
     };
 
     class Call : public Assignable
     {
     public:
-        void setName(const std::string& name)
+        void setIdentifier(std::unique_ptr <Identifier>& identifier)
         {
-            this->name = name;
+            this->identifier = identifier.();
         }
-        void addArgument(const std::shared_ptr<Assignable>& assignableNode)
+    	
+        void addArgument(const std::unique_ptr<Assignable>& assignableNode)
         {
             this->arguments.push_back(assignableNode);
         }
+    	
         virtual Type getType()
         {
             return Node::Type::Call;
         }
-        void setObjectName(const std:: string objectName)
-        {
-            this->objectName = objectName;
-        }
-        std::string objectName;
-        std::string name;
-        std::vector<std::shared_ptr<Assignable>> arguments;
+      
+        std::unique_ptr<Identifier> identifier;
+        std::vector<std::unique_ptr<Assignable>> arguments;
     };
 
     class Assignment : public Node
     {
     public:
-        void setVariable(const std::shared_ptr<Variable>& variable)
+        void setVariable(const std::unique_ptr<Variable>& variable)
         {
             this->variable = variable;
         }
-        void setValue(const std::shared_ptr<Assignable>& value)
+        void setValue(const std::unique_ptr<Assignable>& value)
         {
             this->value = value;
         }
@@ -57,8 +67,8 @@ namespace Nodes {
             return Node::Type::Assignment;
         }
 
-        std::shared_ptr<Variable> variable;
-        std::shared_ptr<Assignable> value;
+        std::unique_ptr<Variable> variable;
+        std::unique_ptr<Assignable> value;
     };
 
     class Condition : public Node
@@ -126,7 +136,7 @@ namespace Nodes {
         {
             this->parameters = parameters;
         }
-        void setBlock(const std::shared_ptr<StatementBlock>& blockNode)
+        void setBlock(const std::unique_ptr<StatementBlock>& blockNode)
         {
             this->blockNode = blockNode;
         }
@@ -137,32 +147,37 @@ namespace Nodes {
 
         std::string name;
         std::vector<std::string> parameters;
-        std::shared_ptr<StatementBlock> blockNode;
+        std::unique_ptr<StatementBlock> blockNode;
     };
 
     class IfStatement : public Node
     {
     public:
-        void setCondition(const std::shared_ptr<Condition>& conditionNode)
+        void setCondition(const std::unique_ptr<Condition>& conditionNode)
         {
             this->conditionNode = conditionNode;
         }
-        void setTrueBlock(const std::shared_ptr<StatementBlock>& trueBlockNode)
+        void setTrueBlock(const std::unique_ptr<StatementBlock>& trueBlockNode)
         {
             this->trueBlockNode = trueBlockNode;
         }
-        void setFalseBlock(const std::shared_ptr<StatementBlock>& falseBlockNode)
+        void setFalseBlock(const std::unique_ptr<StatementBlock>& falseBlockNode)
         {
             this->falseBlockNode = falseBlockNode;
+        }
+    	void addElifBlock(const std::unique_ptr<StatementBlock> elifBlockNode)
+        {
+            this->elifBlockNodes.push_back(elifBlockNode);
         }
         virtual Type getType()
         {
             return Node::Type::IfStatement;
         }
 
-        std::shared_ptr<Condition> conditionNode;
-        std::shared_ptr<StatementBlock> trueBlockNode;
-        std::shared_ptr<StatementBlock> falseBlockNode;
+        std::unique_ptr<Condition> conditionNode;
+        std::unique_ptr<StatementBlock> trueBlockNode;
+        std::vector<std::unique_ptr<StatementBlock>> elifBlockNodes;
+        std::unique_ptr<StatementBlock> falseBlockNode;
     };
 
     class LoopJump : public Node
@@ -188,7 +203,7 @@ namespace Nodes {
     class Program : public Node
     {
     public:
-        void addFunction(const std::shared_ptr<FunDefinition>& function)
+        void addFunction(const std::unique_ptr<FunDefinition>& function)
         {
             this->functions.push_back(function);
         }
@@ -196,18 +211,18 @@ namespace Nodes {
         {
             return Node::Type::Program;
         }
-        void addClass(const std::shared_ptr<ClassDefinition>& classPtr)
+        void addClass(const std::unique_ptr<ClassDefinition>& classPtr)
         {
             this->classes.push_back(classPtr);
         }
-        std::vector<std::shared_ptr<FunDefinition>> functions = {};
-        std::vector<std::shared_ptr<ClassDefinition>> classes = {};
+        std::vector<std::unique_ptr<FunDefinition>> functions = {};
+        std::vector<std::unique_ptr<ClassDefinition>> classes = {};
     };
 
     class ReturnStatement : public Node
     {
     public:
-        void setValue(const std::shared_ptr<Assignable>& assignableNode)
+        void setValue(const std::unique_ptr<Assignable>& assignableNode)
         {
             this->assignableNode = assignableNode;
         }
@@ -216,7 +231,7 @@ namespace Nodes {
             return Node::Type::ReturnStatement;
         }
 
-        std::shared_ptr<Assignable> assignableNode;
+        std::unique_ptr<Assignable> assignableNode;
     };
 
     class StatementBlock : public Node
@@ -241,7 +256,7 @@ namespace Nodes {
         {
             this->name = name;
         }
-        void setValue(const std::shared_ptr<Assignable>& assignableNode)
+        void setValue(const std::unique_ptr<Assignable>& assignableNode)
         {
             this->assignableNode = assignableNode;
         }
@@ -251,37 +266,33 @@ namespace Nodes {
         }
 
         std::string name;
-        std::shared_ptr<Assignable> assignableNode;
+        std::unique_ptr<Assignable> assignableNode;
     };
 
     class Variable : public Assignable
     {
     public:
-        void setName(const std::string& name)
+        void setIdentifier(std::unique_ptr<Identifier> identifier)
         {
-            this->variableName = name;
+            this->identifier = identifier;
         }
 
         virtual Type getType()
         {
             return Node::Type::Variable;
         }
-        void setObjectName(const std::string& objectName)
-        {
-            this->objectName = objectName;
-        }
-        std::string variableName;
-        std::string objectName;
+       
+        std::unique_ptr<Identifier> identifier;
     };
 
     class WhileStatement : public Node
     {
     public:
-        void setCondition(const std::shared_ptr<Condition>& conditionNode)
+        void setCondition(const std::unique_ptr<Condition>& conditionNode)
         {
             this->conditionNode = conditionNode;
         }
-        void setBlock(const std::shared_ptr<StatementBlock>& blockNode)
+        void setBlock(const std::unique_ptr<StatementBlock>& blockNode)
         {
             this->blockNode = blockNode;
         }
@@ -290,8 +301,8 @@ namespace Nodes {
             return Node::Type::WhileStatement;
         }
 
-        std::shared_ptr<Condition> conditionNode;
-        std::shared_ptr<StatementBlock> blockNode;
+        std::unique_ptr<Condition> conditionNode;
+        std::unique_ptr<StatementBlock> blockNode;
     };
 
 	class Literal : public Assignable
@@ -340,7 +351,7 @@ namespace Nodes {
             this->name = name;
         	
         }
-        void setBlock(const std::shared_ptr<ClassBlock>& blockNode)
+        void setBlock(const std::unique_ptr<ClassBlock>& blockNode)
         {
             this->blockNode = blockNode;
         }
@@ -349,7 +360,7 @@ namespace Nodes {
             return Node::Type::ClassDefinition;
         }
         std::string name;
-        std::shared_ptr<ClassBlock> blockNode;
+        std::unique_ptr<ClassBlock> blockNode;
 	};
 
 	class ClassBlock: public Node
@@ -371,4 +382,5 @@ namespace Nodes {
         std::vector<NodePtr> variables;
         std::vector<NodePtr> functions;
 	};
+
 }
