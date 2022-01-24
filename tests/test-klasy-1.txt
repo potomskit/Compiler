@@ -1,0 +1,32 @@
+class Fibonacci
+{
+    a = 1;
+    b = 1;
+
+    def CalculateNextFibonacciNumber()
+    {
+        c = self.b;
+        self.b = self.a + self.b;
+        self.a = c;
+        return self.b;
+    }
+    
+}
+
+def main()
+{
+    fibonacci = Fibonacci();
+    maxValue = 100;
+    fibonacciNumber = 0;
+    fibonacciNumber = fibonacci.CalculateNextFibonacciNumber();
+    while(fibonacciNumber < maxValue)
+    {
+        fibonacciNumber = fibonacci.CalculateNextFibonacciNumber();
+        if(fibonacciNumber < 20)
+        {
+        	continue;
+        }
+        print(fibonacciNumber);
+        print("\n");
+    }
+}

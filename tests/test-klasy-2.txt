@@ -1,0 +1,22 @@
+class Max
+{
+    def FindMax(x,y)
+    {
+    	if(x>y)
+    	{
+    		return x;
+    	}
+    	else
+    	{
+    		return y;
+    	}
+    }
+}
+
+def main()
+{
+    a = Max();
+    print(a.FindMax(10, 20));
+    print("\n");
+    print(a.FindMax(20, 10));
+}

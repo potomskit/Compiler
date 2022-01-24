@@ -1,0 +1,21 @@
+class Min{
+    def FindMin(x,y)
+    {
+        if(x>y)
+        {
+            return y;
+
+        }
+        else{
+            return x;
+        }
+    }
+    def _init_
+}
+
+def main()
+{
+    min = Min();
+    min.FindMin(1);
+}
+

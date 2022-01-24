@@ -1,0 +1,71 @@
+class Fibonacci
+{
+    a = 1;
+    b = 1;
+
+    def CalculateNextFibonacciNumber()
+    {
+        c = self.b;
+        self.b = self.a + self.b;
+        self.a = c;
+        return self.b;
+    }
+    def Max(x,y)
+    {
+    	if(x>y)
+    	{
+    		return x;
+    	}
+    	else
+    	{
+    		return y;
+    	}
+    }
+    def CountTo20()
+    {
+    	x=0;
+    	while(1==1)
+    	{
+    		x=x+1;
+    		if(x==20)
+    		{
+    			return x;
+    		}
+    		
+    	}
+    }
+}
+
+def main()
+{
+    print("test \n");
+    fibonacci = Fibonacci();
+    x = fibonacci.CountTo20();
+    print(x);
+    a = 1;
+    while(a<60 and a<30 or a == 30)
+    {
+    	a = a+1;
+    	if(a == 25)
+    	{
+    		break;
+    	}
+    }
+    print(a);
+    print("\n");
+    maxValue = 1000;
+    fibonacciNumber = 0;
+    fibonacciNumber = fibonacci.CalculateNextFibonacciNumber();
+    
+    while(fibonacciNumber < maxValue)
+    {
+        fibonacciNumber = fibonacci.CalculateNextFibonacciNumber();
+        if(fibonacciNumber < 20)
+        {
+        	continue;
+        }
+        print(fibonacciNumber);
+        print("\n");
+    }
+}
+

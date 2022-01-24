@@ -1,0 +1,10 @@
+def main()
+{
+    x = 2;
+    y = 2;
+   
+    z = (x + y)*x;
+    print(z);
+    print("\n");
+    print(x+y*x);
+}

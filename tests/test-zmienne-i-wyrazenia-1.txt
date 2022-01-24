@@ -1,0 +1,13 @@
+def main()
+{
+    x = 1;
+    y = 1;
+    print(x);
+    print("\n");
+    print(y);
+    print("\n");
+    z = x + y;
+    print(z);
+    print("\n")
+    print(x + y);
+}
